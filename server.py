@@ -57,7 +57,7 @@ def token():
 
   token = AccessToken(account_sid, api_key, api_key_secret, identity=IDENTITY)
   token.add_grant(grant)
-  k = {'accessToken': str(token)}
+  k = {'accessToken': token.to_jwt()}
   return json.dumps(k)
 
 """
