@@ -5,11 +5,14 @@ from twilio.jwt.access_token.grants import VoiceGrant
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse
 
-ACCOUNT_SID = 'AC***'
-API_KEY = 'SK***'
-API_KEY_SECRET = '***'
-PUSH_CREDENTIAL_SID = 'CR***'
-APP_SID = 'AP***'
+ACCOUNT_SID = 'AC0df3bf80183839dd04a878cd8d2fc7d8'
+AUTH_TOKEN = '6f0e48991622bf6008e99a7107fd039b'
+API_KEY = 'SK0e0f65b197b8f8176ffa754f230cc781'
+API_KEY_SECRET = 'ujKTh7hL8WwX9QkGahsHc8KK5HeIPuOg'
+PUSH_CREDENTIAL_SID_IOS_DEV = 'CRd76831eec29b5ade0eb0030e43ad8e36'
+PUSH_CREDENTIAL_SID_IOS_PROD = 'CRefeddc2f2208366236953589c6f7d0ab'
+PUSH_CREDENTIAL_SID_ANDROID = 'CRb0a1441bf89b5256d80328bef0950f6a'
+APP_SID = 'AP59ba55fdf50642936a29e04dbe3fe799'
 
 """
 Use a valid Twilio number by adding to your account via https://www.twilio.com/console/phone-numbers/verified
@@ -30,23 +33,31 @@ Creates an access token with VoiceGrant using your Twilio credentials.
 """
 @app.route('/accessToken', methods=['GET', 'POST'])
 def token():
+  client_name = request.values.get('client')
+  platform = request.values.get('platform')
   account_sid = os.environ.get("ACCOUNT_SID", ACCOUNT_SID)
   api_key = os.environ.get("API_KEY", API_KEY)
   api_key_secret = os.environ.get("API_KEY_SECRET", API_KEY_SECRET)
-  push_credential_sid = os.environ.get("PUSH_CREDENTIAL_SID", PUSH_CREDENTIAL_SID)
   app_sid = os.environ.get("APP_SID", APP_SID)
-
+  
+  if platform == 'iosdev':
+    push_credential_sid = os.environ.get("PUSH_CREDENTIAL_SID_IOS", PUSH_CREDENTIAL_SID_IOS_DEV)
+  elif platform == 'iosprod':
+    push_credential_sid = os.environ.get("PUSH_CREDENTIAL_SID_IOS", PUSH_CREDENTIAL_SID_IOS_PROD)
+  else:
+    push_credential_sid = os.environ.get("PUSH_CREDENTIAL_SID_ANDROID", PUSH_CREDENTIAL_SID_ANDROID)
+    
+  if client_name:
+     IDENTITY =client_name
   grant = VoiceGrant(
     push_credential_sid=push_credential_sid,
     outgoing_application_sid=app_sid
   )
 
-  identity = request.values["identity"] \
-          if request.values and request.values["identity"] else IDENTITY
-  token = AccessToken(account_sid, api_key, api_key_secret, identity=identity)
+  token = AccessToken(account_sid, api_key, api_key_secret, IDENTITY)
   token.add_grant(grant)
-
-  return token.to_jwt()
+  k = {'accessToken': str(token)}
+  return json.dumps(k)
 
 """
 Creates an endpoint that plays back a greeting.
