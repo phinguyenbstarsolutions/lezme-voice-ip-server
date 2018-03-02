@@ -69,6 +69,29 @@ def incoming():
   resp.say("Congratulations! You have received your first inbound call! Good bye.")
   return str(resp)
 
+@app.route('/outgoing', methods=['GET', 'POST'])
+def outgoing():
+  resp = twilio.twiml.Response()
+  from_value = request.values.get('From')
+  caller = request.values.get('Caller')
+  caller_value=caller[7:]
+  to = request.values.get('To')
+  limit = request.values.get('Limit')
+  if not limit:
+      limit = '300'
+  if not (from_value and to):
+    resp.say("Invalid request")
+    return str(resp)
+
+  if to.startswith("client:"):
+    # client -> client
+    resp.dial(callerId=from_value).client(to[7:])
+  elif to.startswith("number:"):
+    resp.dial(callerId=caller_value, timeLimit=limit).number(to[7:])
+  else:
+    resp.say("Invalid request")
+  return str(resp)
+
 """
 Makes a call to the specified client using the Twilio REST API.
 """
