@@ -55,7 +55,7 @@ def token():
     outgoing_application_sid=app_sid
   )
 
-  token = AccessToken(account_sid, api_key, api_key_secret, identity=IDENTITY, ttl=60)
+  token = AccessToken(account_sid, api_key, api_key_secret, identity=IDENTITY, ttl=86400)
   token.add_grant(grant)
   k = {'accessToken': token.to_jwt()}
   return json.dumps(k)
